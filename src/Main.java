@@ -76,8 +76,8 @@ public class Main {
 		});
 		// write to files
 		filteredAdLists.forEach(Main::createFile);
-//		if (checkGitChanges())
-//			makeGitCommands();
+		if (checkGitChanges())
+			makeGitCommands();
 	}
 	
 	private static void createFile(String listName, Set<String> urls) {
