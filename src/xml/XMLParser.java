@@ -54,7 +54,7 @@ public class XMLParser {
 			if (inputFile.createNewFile()) {
 				saveDummyDocument(inputFile);
 				System.err.println("There was no " + CONFIG_FILE_NAME
-							 + " available. Created a dummy one. Please fill it out");
+								   + " available. Created a dummy one. Please fill it out");
 				System.exit(1);
 			}
 			return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputFile);
