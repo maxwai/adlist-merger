@@ -1,7 +1,7 @@
 FROM openjdk:17-buster
 
 ENV SAVE_PATH "/save_location"
-RUN apt-get update && apt-get -y install git
+RUN apt-get update && apt-get -y install git git-lfs
 WORKDIR /usr/src
 COPY src/ ./
 RUN javac Main.java
