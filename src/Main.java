@@ -23,7 +23,8 @@ public class Main {
 	private static final String GIT_FOLDER = "git_folder";
 	
 	private static final List<Character> BEGINNING_ILLEGAL_CHARACTERS =
-			List.of('#', '!', '$', '&', '>', '<', '[', '|', '@', '/', '.', ':', '-', ',');
+			List.of('#', '!', '$', '&', '>', '<', '[', '|', '@', '/', '.', ':', '-', ',', '?',
+					'_');
 	
 	private static final List<Function<String, String>> REPLACE_FUNCTIONS = List.of(
 			s -> s.replace("\t", " "),
