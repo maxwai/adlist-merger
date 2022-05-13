@@ -23,7 +23,7 @@ public class Main {
 	private static final String GIT_FOLDER = "git_folder";
 	
 	private static final List<Character> BEGINNING_ILLEGAL_CHARACTERS =
-			List.of('#', '!', '$', '&', '>', '<', '[', '|', '@', '/', '.', ':', '-', ',', '?',
+			List.of('#', '!', '$', '&', '>', '<', ']', '[', '|', '@', '/', '.', ':', '-', ',', '?',
 					'_');
 	
 	private static final List<Function<String, String>> REPLACE_FUNCTIONS = List.of(
@@ -39,6 +39,12 @@ public class Main {
 			s -> s.replace("ff02::3 ", ""),
 			s -> s.replace(":: ", ""),
 			s -> s.contains("#") ? s.substring(0, s.indexOf("#")) : s
+	);
+	
+	private static final List<Function<String, Boolean>> ILLEGAL_START_PHRASES = List.of(
+			s -> s.startsWith("coded by"),
+			s -> s.startsWith("Malvertising list by Disconnect"),
+			s -> s.startsWith("Blocklist of hostnames")
 	);
 	
 	public static void main(String[] args) {
@@ -91,9 +97,11 @@ public class Main {
 					BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
 				List<String> temp = reader.lines()
 						.parallel()
+						.map(String::trim)
 						.filter(line -> !line.equals(""))
 						.filter(line -> !BEGINNING_ILLEGAL_CHARACTERS.contains(line.charAt(0)))
-						.filter(line -> !line.startsWith("coded by"))
+						.filter(line -> ILLEGAL_START_PHRASES.stream()
+								.noneMatch(function -> function.apply(line)))
 						.map(line -> REPLACE_FUNCTIONS.stream()
 								.reduce(Function.identity(), Function::andThen)
 								.apply(line))
