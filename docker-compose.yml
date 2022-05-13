@@ -7,4 +7,4 @@ services:
     restart: "unless-stopped"
     volumes:
       - ./appdata:/usr/src/appdata
-      - ./git_folder:/usr/scr/git_folder
+      - ./git_folder:/usr/src/git_folder
