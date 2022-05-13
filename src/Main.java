@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,8 +76,8 @@ public class Main {
 		});
 		// write to files
 		filteredAdLists.forEach(Main::createFile);
-		if (checkGitChanges())
-			makeGitCommands();
+//		if (checkGitChanges())
+//			makeGitCommands();
 	}
 	
 	private static void createFile(String listName, Set<String> urls) {
@@ -107,6 +108,10 @@ public class Main {
 								.apply(line))
 						.map(String::trim)
 						.filter(line -> !line.equals(""))
+						// catch following: medicalxpress.com,techxplore.com
+						.flatMap(line -> Arrays.stream(line.split(",")))
+						// catch following:  ublock.org www.ublock.org demo.ublock.org
+						.flatMap(line -> Arrays.stream(line.split(" ")))
 						.peek(line -> {
 							if (!isValid(line))
 								System.out.println(url + " : " + line);
