@@ -11,6 +11,10 @@ Tool to merge a lot of Ad Lists for pihole together while removing duplicates
 The Tool needs a `config.xml` in the appdata folder. An example config file will be created if none
 is present.
 
+The Tool expects a `git_folder` folder in the project root where the files will be created and
+updated. Be sure to already have a working git folder there were a push works and doesn't need any
+username/password input from the user.
+
 ### Prerequisites
 
 You will need Java Version 17 or later to make it work. It may work with lower Java versions, but it
