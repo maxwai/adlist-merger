@@ -2,3 +2,4 @@
 *.iml
 out/
 appdata/config.xml
+git_folder/
