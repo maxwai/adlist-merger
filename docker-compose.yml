@@ -1,8 +1,8 @@
 version: '3.2'
 
 services:
-  bot:
-    container_name: ADList-Merger
+  adlist-merger:
+    container_name: Adlist-Merger
     build: .
     restart: "unless-stopped"
     volumes:
