@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -23,9 +23,9 @@ public class Main {
 	
 	private static final String GIT_FOLDER = "git_folder";
 	
-	private static final List<Character> BEGINNING_ILLEGAL_CHARACTERS =
-			List.of('#', '!', '$', '&', '>', '<', ']', '[', '|', '@', '/', '.', ':', '-', ',', '?',
-					'_');
+	private static final Set<Character> BEGINNING_ILLEGAL_CHARACTERS =
+			Set.of('#', '!', '$', '&', '>', '<', ']', '[', '|', '@', '/', '.', ':', '-', ',', '?',
+					'_', '%');
 	
 	private static final List<Function<String, String>> REPLACE_FUNCTIONS = List.of(
 			s -> s.replace("\t", " "),
@@ -49,35 +49,39 @@ public class Main {
 	);
 	
 	public static void main(String[] args) {
-		// listOfDomains -> listsNames -> listsNames
-		Map<List<String>, List<String>> adLists = XMLParser.getAdList()
-				.entrySet()
-				.stream()
-				.parallel()
-				.map(entry -> Map.entry(getAdList(entry.getKey()), entry.getValue()))
-				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-		
-		// listsName -> lists of listOfDomains
-		Map<String, List<List<String>>> sortedAdLists = new HashMap<>();
-		adLists.forEach((domains, list) -> list
-				.forEach(listName -> {
-					if (!sortedAdLists.containsKey(listName)) {
-						sortedAdLists.put(listName, new ArrayList<>());
-					}
-					sortedAdLists.get(listName).add(domains);
-				}));
-		
-		// listsName -> filtered list of urls
-		Map<String, Set<String>> filteredAdLists = new HashMap<>();
-		sortedAdLists.forEach((listName, list) -> {
-			Set<String> set = new TreeSet<>();
-			list.forEach(set::addAll);
-			filteredAdLists.put(listName, set);
-		});
-		// write to files
-		filteredAdLists.forEach(Main::createFile);
-		if (checkGitChanges())
-			makeGitCommands();
+		try {
+			// listOfDomains -> listsNames -> listsNames
+			Map<HashSet<String>, List<String>> adLists = XMLParser.getAdList()
+					.entrySet()
+					.stream()
+					.parallel()
+					.map(entry -> Map.entry(getAdList(entry.getKey()), entry.getValue()))
+					.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+			
+			// listsName -> lists of listOfDomains
+			Map<String, List<HashSet<String>>> sortedAdLists = new HashMap<>();
+			adLists.forEach((domains, list) -> list
+					.forEach(listName -> {
+						if (!sortedAdLists.containsKey(listName)) {
+							sortedAdLists.put(listName, new ArrayList<>());
+						}
+						sortedAdLists.get(listName).add(domains);
+					}));
+			
+			// listsName -> filtered list of urls
+			Map<String, Set<String>> filteredAdLists = new HashMap<>();
+			sortedAdLists.forEach((listName, list) -> {
+				Set<String> set = list.stream().flatMap(Set::stream).collect(Collectors.toSet());
+				filteredAdLists.put(listName, set);
+			});
+			// write to files
+			filteredAdLists.forEach(Main::createFile);
+			if (checkGitChanges())
+				makeGitCommands();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 	
 	private static void createFile(String listName, Set<String> urls) {
@@ -89,15 +93,14 @@ public class Main {
 		}
 	}
 	
-	private static List<String> getAdList(String url) {
+	private static HashSet<String> getAdList(String url) {
 		final URLConnection connection;
 		try {
 			connection = new URL(url).openConnection();
 			
 			try (InputStream input = connection.getInputStream();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
-				List<String> temp = reader.lines()
-						.parallel()
+				return reader.lines()
 						.map(String::trim)
 						.filter(line -> !line.equals(""))
 						.filter(line -> !BEGINNING_ILLEGAL_CHARACTERS.contains(line.charAt(0)))
@@ -117,9 +120,7 @@ public class Main {
 								System.out.println(url + " : " + line);
 						})
 						.filter(Main::isValid)
-						.collect(Collectors.toCollection(ArrayList::new));
-				temp.add(0, url);
-				return temp;
+						.collect(Collectors.toCollection(HashSet::new));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
