@@ -77,6 +77,9 @@ public class XMLParser {
 			try {
 				Element adlist = (Element) adlist_list.item(i);
 				String url = adlist.getAttribute(URL_ATTRIBUTE_TAG);
+				if (output.containsKey(url)) {
+					System.out.println(url + " multiple times in list, please fix");
+				}
 				List<String> lists = new ArrayList<>();
 				NodeList list_list = adlist.getElementsByTagName(LIST_TAG);
 				for (int j = 0; j < list_list.getLength(); j++) {
