@@ -25,7 +25,7 @@ public class Main {
 	
 	private static final Set<Character> BEGINNING_ILLEGAL_CHARACTERS =
 			Set.of('#', '!', '$', '&', '>', '<', ']', '[', '|', '@', '/', '.', ':', '-', ',', '?',
-					'_', '%');
+					'_', '%', ';', '=');
 	
 	private static final List<Function<String, String>> REPLACE_FUNCTIONS = List.of(
 			s -> s.replace("\t", " "),
@@ -46,6 +46,12 @@ public class Main {
 			s -> s.startsWith("coded by"),
 			s -> s.startsWith("Malvertising list by Disconnect"),
 			s -> s.startsWith("Blocklist of hostnames")
+	);
+	
+	private static final List<Function<String, Boolean>> ILLEGAL_LINES = List.of(
+			s -> s.equals("localhost"),
+			s -> s.equals("fe"),
+			s -> s.equals("ff")
 	);
 	
 	public static void main(String[] args) {
@@ -115,6 +121,8 @@ public class Main {
 						.flatMap(line -> Arrays.stream(line.split(",")))
 						// catch following:  ublock.org www.ublock.org demo.ublock.org
 						.flatMap(line -> Arrays.stream(line.split(" ")))
+						.filter(line -> ILLEGAL_LINES.stream()
+								.noneMatch(function -> function.apply(line)))
 						.peek(line -> {
 							if (!isValid(line))
 								System.out.println(url + " : " + line);
