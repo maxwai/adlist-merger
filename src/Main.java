@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main {
 	
@@ -63,7 +64,10 @@ public class Main {
 					.stream()
 					.parallel()
 					.map(entry -> Map.entry(getAdList(entry.getKey()), entry.getValue()))
-					.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+					.filter(entry -> !entry.getKey().isEmpty())
+					.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
+							(k1, k2) -> Stream.concat(k1.stream(), k2.stream()).distinct()
+									.toList()));
 			
 			// listsName -> lists of listOfDomains
 			Map<String, List<HashSet<String>>> sortedAdLists = new HashMap<>();
@@ -107,7 +111,7 @@ public class Main {
 			
 			try (InputStream input = connection.getInputStream();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
-				return reader.lines()
+				HashSet<String> collect = reader.lines()
 						.map(String::trim)
 						.filter(line -> !line.equals(""))
 						.filter(line -> !BEGINNING_ILLEGAL_CHARACTERS.contains(line.charAt(0)))
@@ -130,6 +134,10 @@ public class Main {
 						})
 						.filter(Main::isValid)
 						.collect(Collectors.toCollection(HashSet::new));
+				if (collect.isEmpty()) {
+					System.out.println(url + " is empty");
+				}
+				return collect;
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
