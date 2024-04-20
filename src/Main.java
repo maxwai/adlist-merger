@@ -1,8 +1,4 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +22,7 @@ public class Main {
 	private static final String GIT_FOLDER = "git_folder";
 	
 	private static final Set<Character> BEGINNING_ILLEGAL_CHARACTERS =
-			Set.of('#', '!', '$', '&', '>', '<', ']', '[', '|', '@', '/', '.', ':', '-', ',', '?',
+			Set.of('#', '!', '$', '&', '>', '<', ']', '[', '@', '/', '.', ':', '-', ',', '?',
 					'_', '%', ';', '=');
 	
 	private static final List<Function<String, String>> REPLACE_FUNCTIONS = List.of(
@@ -41,7 +37,8 @@ public class Main {
 			s -> s.replace("ff02::2 ", ""),
 			s -> s.replace("ff02::3 ", ""),
 			s -> s.replace(":: ", ""),
-			s -> s.contains("#") ? s.substring(0, s.indexOf("#")) : s
+			s -> s.contains("#") ? s.substring(0, s.indexOf("#")) : s,
+			s -> s.startsWith("||") && s.endsWith("^") ? s.substring(2, s.length() - 1) : s
 	);
 	
 	private static final List<Function<String, Boolean>> ILLEGAL_START_PHRASES = List.of(
@@ -113,7 +110,7 @@ public class Main {
 					BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
 				HashSet<String> collect = reader.lines()
 						.map(String::trim)
-						.filter(line -> !line.equals(""))
+						.filter(line -> !line.isEmpty())
 						.filter(line -> !BEGINNING_ILLEGAL_CHARACTERS.contains(line.charAt(0)))
 						.filter(line -> ILLEGAL_START_PHRASES.stream()
 								.noneMatch(function -> function.apply(line)))
@@ -121,7 +118,7 @@ public class Main {
 								.reduce(Function.identity(), Function::andThen)
 								.apply(line))
 						.map(String::trim)
-						.filter(line -> !line.equals(""))
+						.filter(line -> !line.isEmpty())
 						// catch following: medicalxpress.com,techxplore.com
 						.flatMap(line -> Arrays.stream(line.split(",")))
 						// catch following:  ublock.org www.ublock.org demo.ublock.org
@@ -138,6 +135,9 @@ public class Main {
 					System.out.println(url + " is empty");
 				}
 				return collect;
+			} catch (FileNotFoundException ignored) {
+				System.err.println(url + " not found");
+				return new HashSet<>();
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
